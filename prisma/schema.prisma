@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  name         String
+  bio          String   @default("")
+  avatarEmoji  String   @default("🙂")
+  favoriteThings String @default("")
+  activities     String @default("")
+  createdAt    DateTime @default(now())
+
+  sentRequests     FriendConnection[] @relation("Requester")
+  receivedRequests FriendConnection[] @relation("Addressee")
+
+  notesWritten  PersonNote[] @relation("NoteAuthor")
+  notesAboutMe  PersonNote[] @relation("NoteSubject")
+
+  giftIdeasWritten GiftIdea[] @relation("GiftAuthor")
+  giftIdeasAboutMe GiftIdea[] @relation("GiftSubject")
+
+  activities_feed ActivityEvent[] @relation("FeedActor")
+}
+
+enum FriendStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model FriendConnection {
+  id            String       @id @default(cuid())
+  requesterId   String
+  addresseeId   String
+  status        FriendStatus @default(PENDING)
+  createdAt     DateTime     @default(now())
+  respondedAt   DateTime?
+
+  requester User @relation("Requester", fields: [requesterId], references: [id])
+  addressee User @relation("Addressee", fields: [addresseeId], references: [id])
+
+  @@unique([requesterId, addresseeId])
+}
+
+// Notes one person keeps about another (activities enjoyed together, favorite
+// things). Isolated per (subject, author) pair so different friends' guesses
+// about the same person never mix, and the subject never sees what's written
+// about them.
+model PersonNote {
+  id         String   @id @default(cuid())
+  subjectId  String
+  authorId   String
+  activities String   @default("")
+  favorites  String   @default("")
+  updatedAt  DateTime @updatedAt
+
+  subject User @relation("NoteSubject", fields: [subjectId], references: [id])
+  author  User @relation("NoteAuthor", fields: [authorId], references: [id])
+
+  @@unique([subjectId, authorId])
+}
+
+enum GiftSource {
+  MANUAL
+  AI
+}
+
+// A gift idea about `subject`, written by `author`. Strictly scoped to that
+// (subject, author) pair: the subject can't see it (spoiler), and other
+// authors' ideas about the same subject stay separate.
+model GiftIdea {
+  id          String     @id @default(cuid())
+  subjectId   String
+  authorId    String
+  title       String
+  description String     @default("")
+  source      GiftSource @default(MANUAL)
+  createdAt   DateTime   @default(now())
+
+  subject User @relation("GiftSubject", fields: [subjectId], references: [id])
+  author  User @relation("GiftAuthor", fields: [authorId], references: [id])
+
+  @@index([subjectId, authorId])
+}
+
+enum ActivityType {
+  JOINED
+  FRIEND_CONNECTED
+  PROFILE_UPDATED
+}
+
+// Public-ish activity feed events. Deliberately excludes anything about
+// notes/gift ideas so a subject's own feed never spoils gift surprises.
+model ActivityEvent {
+  id        String       @id @default(cuid())
+  actorId   String
+  type      ActivityType
+  metadata  String       @default("")
+  createdAt DateTime     @default(now())
+
+  actor User @relation("FeedActor", fields: [actorId], references: [id])
+}
