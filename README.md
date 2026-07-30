@@ -4,11 +4,30 @@ Wrapped is a [Next.js](https://nextjs.org) (App Router) web app styled with Tail
 backed by [Firebase](https://firebase.google.com) (Auth + Firestore) and using the
 [Claude API](https://docs.claude.com) to generate gift-idea suggestions.
 
+### Option A — run it instantly, no Firebase project needed (Emulator Suite)
+
+Good for trying the app locally. Data lives only in the emulators and resets
+when you stop them; the AI gift-ideas feature needs a real `ANTHROPIC_API_KEY`
+either way.
+
+```bash
+npm install
+cp .env.example .env.local        # then set NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true
+npm run dev:emulators              # terminal 1 — Firebase Auth + Firestore emulators
+npm run dev                        # terminal 2 — Next.js dev server
+```
+
+Open http://localhost:3000 — the emulators accept any config values, so the
+placeholder Firebase fields already in `.env.example` work as-is; you only
+need to flip `NEXT_PUBLIC_USE_FIREBASE_EMULATORS` to `true`.
+
+### Option B — a real Firebase project (for actual deployment)
+
 1. **Create a Firebase project** at https://console.firebase.google.com — enable
    **Authentication** (Email/Password provider) and **Firestore** (production mode).
-2. Copy `.env.example` to `.env.local` and fill in your Firebase web app config
-   (Project settings → General → Your apps) and an `ANTHROPIC_API_KEY` from
-   https://console.anthropic.com.
+2. Copy `.env.example` to `.env.local`, leave `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=false`,
+   and fill in your Firebase web app config (Project settings → General → Your apps)
+   and an `ANTHROPIC_API_KEY` from https://console.anthropic.com.
 3. Deploy the security rules in `firestore.rules` to your Firebase project
    (`firebase deploy --only firestore:rules`, or paste them into the Firestore
    Rules tab in the console).
