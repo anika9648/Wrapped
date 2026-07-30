@@ -126,7 +126,7 @@ Rowing
 Canoeing
 Kayaking
 Sailing
-Triathlon
+Triathlon (swimming, biking, running)
 Weightlifting
 Powerlifting
 Judo
