@@ -1,0 +1,62 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // ---- users/{uid} : public profile fields, owner-only writes ----
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if false;
+
+      // Wishlist items belong to the profile owner; anyone signed in can
+      // read them (friends need to browse a person's wishlist), but only
+      // the owner can add/edit/remove entries.
+      match /wishlist/{itemId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && request.auth.uid == uid;
+
+        // A "bought" mark is private to the friend who set it: doc id is
+        // that friend's own uid, so only they can read or write it, and the
+        // wishlist owner never sees who has bought what.
+        match /boughtBy/{friendUid} {
+          allow read, write: if isSignedIn() && request.auth.uid == friendUid;
+        }
+      }
+
+      // Anniversaries / yearly events the signed-in user tracks about
+      // their friends. Owner-only, same as wishlist.
+      match /events/{eventId} {
+        allow read, write: if isSignedIn() && request.auth.uid == uid;
+      }
+    }
+
+    // ---- friendships/{uidA_uidB} ----
+    match /friendships/{friendshipId} {
+      allow read: if isSignedIn() && request.auth.uid in resource.data.users;
+      allow create: if isSignedIn()
+        && request.auth.uid in request.resource.data.users
+        && request.resource.data.status == 'pending';
+      allow update: if isSignedIn() && request.auth.uid in resource.data.users;
+      allow delete: if false;
+    }
+
+    // ---- giftIdeas/{targetUid_authorUid}/items/{itemId} ----
+    // Private notes one friend keeps about another. Only the author can
+    // read or write their own notes about a person — never the target,
+    // and never a different friend's notes about the same person.
+    match /giftIdeas/{pairId}/items/{itemId} {
+      allow read, write: if isSignedIn() && pairId.split('_')[1] == request.auth.uid;
+    }
+
+    // "Bought" marks scoped the same way as wishlist boughtBy: only the
+    // author who set them can ever read them back.
+    match /giftIdeas/{pairId}/boughtMarks/{authorUid} {
+      allow read, write: if isSignedIn() && request.auth.uid == authorUid;
+    }
+  }
+}

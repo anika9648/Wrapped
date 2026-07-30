@@ -1,3 +1,57 @@
+## Getting started
+
+Wrapped is a [Next.js](https://nextjs.org) (App Router) web app styled with Tailwind CSS,
+backed by [Firebase](https://firebase.google.com) (Auth + Firestore) and using the
+[Claude API](https://docs.claude.com) to generate gift-idea suggestions.
+
+1. **Create a Firebase project** at https://console.firebase.google.com — enable
+   **Authentication** (Email/Password provider) and **Firestore** (production mode).
+2. Copy `.env.example` to `.env.local` and fill in your Firebase web app config
+   (Project settings → General → Your apps) and an `ANTHROPIC_API_KEY` from
+   https://console.anthropic.com.
+3. Deploy the security rules in `firestore.rules` to your Firebase project
+   (`firebase deploy --only firestore:rules`, or paste them into the Firestore
+   Rules tab in the console).
+4. Install dependencies and run the dev server:
+   ```bash
+   npm install
+   npm run dev
+   ```
+5. Open http://localhost:3000 — you'll see the splash screen, then be routed to
+   sign up, complete your profile, and land on the home feed.
+
+### What's built (MVP)
+
+- Splash animation (logo → confetti → slogan → home)
+- Email/password auth, profile setup wizard (all fields from the spec below)
+- Home feed of friends, search + friend requests
+- Friend profile pages with a private "gift notes" list per author (never mixed
+  with the friend's own wishlist or other friends' notes) and a private
+  "bought" mark on wishlist items (hidden from the recipient and other friends)
+- Own profile + wishlist (like ❤ / mark-as-received 🎁 toggles)
+- AI-generated gift ideas (Claude) for yourself or a friend, with "add to
+  wishlist" / "add to friend's ideas" actions
+- Anniversaries/yearly events per friend
+- Firestore security rules enforcing the privacy rules above
+
+### Known gaps / open questions (not yet specified or implemented)
+
+- **Notifications**: the "did they like the gift?" prompt and event/anniversary
+  reminders aren't wired up — no push/email notification service is configured.
+- **Monetization** (affiliate links, premium tier, sponsorships): explicitly
+  marked "tbd" in the spec — not implemented.
+- **Image uploads**: Firebase Storage is initialized but there's no profile
+  picture upload UI yet.
+- **Friend search** is a simple name substring match — no privacy controls
+  (e.g. "who can find me by search") have been decided.
+- **Gift-idea privacy** in Firestore rules keys off splitting the `targetUid_authorUid`
+  document id on `_`; this assumes Firebase Auth UIDs never contain an
+  underscore (true today, but brittle if that ever changes).
+- **Sports/scents lists** are hardcoded from the spec; "Other interests" is
+  free text.
+
+---
+
 We will need to create a working app using AI throughout the next three days to assist friends, family, etc. in shopping for loved ones. This app will work similarly to many social media apps with feeds, customization for profiles, and other interesting features tbd. Profiles that connect to one another so you can search and find a friend and utilize their profile’s gift guide. 
 
 The gifts that one adds to notes under their friend’s profiles are kept separate from those that the person themselves added so that if one of the friend’s ideas is wrong, it won’t interfere with the suggestions that others are given.

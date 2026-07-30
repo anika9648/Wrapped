@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1f2430;
+
+  /* Main color scheme */
+  --color-wrapped-teal: #52ebcf;
+  --color-wrapped-pink: #ff9292;
+  --color-wrapped-yellow: #ffff47;
+
+  /* Supporting colors (per-profile accent palette) */
+  --color-support-1: #ff9292;
+  --color-support-2: #ff9900;
+  --color-support-3: #ffff47;
+  --color-support-4: #6cff6c;
+  --color-support-5: #52ebcf;
+  --color-support-6: #9fc5e8;
+  --color-support-7: #e892ff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-wrapped-teal: var(--color-wrapped-teal);
+  --color-wrapped-pink: var(--color-wrapped-pink);
+  --color-wrapped-yellow: var(--color-wrapped-yellow);
+  --font-sans: "Trebuchet MS", "Trebuchet-fallback", ui-sans-serif, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Trebuchet MS", "Trebuchet-fallback", ui-sans-serif, sans-serif;
+}
+
+.like-button-active {
+  color: var(--color-wrapped-pink);
+}
