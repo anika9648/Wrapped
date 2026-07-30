@@ -228,3 +228,4 @@ Font: Trebuchet MS
 	Profiles should be customizable so that when someone adds a friend, they can upload a profile picture and change the color scheme that they see for the person. This could mean that when one clicks on their friend’s profile to see both the ideas that they have noted and when certain events related to the person occur.
 
 
+ .
