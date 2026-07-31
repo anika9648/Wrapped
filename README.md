@@ -36,10 +36,54 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Deploying (e.g. to view it on a phone, Chromebook, or anywhere outside your own machine)
+
+Running `npm run dev` only serves the app on your own computer — nothing
+outside your network can open it. To get a real link that opens in Chrome on
+any device, deploy it. This section is purely additive: it doesn't change how
+`npm run dev` works locally, on this machine or anyone else's.
+
+The app auto-detects its database at startup — if `TURSO_DATABASE_URL` is
+set, it uses a hosted database (below); otherwise it uses the local SQLite
+file exactly as before. Nothing to toggle by hand.
+
+### 1. Create a free hosted database (Turso)
+
+A deployed app has no persistent local disk to keep a SQLite file on, so it
+needs a hosted one. [Turso](https://turso.tech) is SQLite-compatible and has a
+free tier — no CLI required:
+
+1. Sign up at [turso.tech](https://turso.tech) and create a new database from
+   the web dashboard.
+2. Open its **SQL console** in the dashboard and paste in the contents of
+   [`prisma/migrations/20260729185424_init/migration.sql`](prisma/migrations/20260729185424_init/migration.sql)
+   to create the tables, then run it.
+3. From the database's "Connect" page, copy the **URL** (starts with
+   `libsql://`) and create/copy an **auth token**.
+
+### 2. Deploy to Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new), sign in with GitHub, and
+   import this repository.
+2. Before the first deploy, add these environment variables (Project
+   Settings → Environment Variables):
+   - `TURSO_DATABASE_URL` — the `libsql://...` URL from step 1
+   - `TURSO_AUTH_TOKEN` — the auth token from step 1
+   - `SESSION_SECRET` — any long random string (e.g. generate one with
+     `openssl rand -base64 32`)
+3. Deploy. Vercel gives you a `https://your-project.vercel.app` URL — open
+   that in Chrome on any device, including a Chromebook.
+
+Sign up for an account through that URL the same way you would locally; the
+seed script only runs against your local dev database, so a fresh deployment
+starts empty.
+
 ## Stack
 
 - Next.js 16 (App Router, Turbopack) + React 19 + TypeScript + Tailwind v4
-- Prisma 7 with the `@prisma/adapter-better-sqlite3` driver adapter (SQLite)
+- Prisma 7 with the `@prisma/adapter-better-sqlite3` driver adapter (local
+  SQLite file) by default, or `@prisma/adapter-libsql` (hosted Turso) when
+  `TURSO_DATABASE_URL` is set — see `src/lib/prisma.ts`
 - Auth: bcrypt password hashing + signed JWT session cookies (`jose`), route
   protection via `src/proxy.ts`
 - Server Actions for all mutations (signup/login, profile edits, friend
